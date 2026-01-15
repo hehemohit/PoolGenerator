@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Logo } from "@/components/Logo"
 import { ChevronLeft, Trophy, Download } from "lucide-react"
 
 type Match = {
@@ -19,16 +20,21 @@ type Match = {
 
 export default function BracketPage() {
     const router = useRouter()
-    const { teams, sport, tournamentName } = useTournamentStore()
-    const [matches, setMatches] = useState<Match[]>([])
+    const { teams, sport, tournamentName, matches, setMatches, updateMatchWinner } = useTournamentStore()
     const [rounds, setRounds] = useState<number>(0)
+    const [isHydrated, setIsHydrated] = useState(false)
+
+    // Wait for hydration to avoid mismatch
+    useEffect(() => {
+        setIsHydrated(true)
+    }, [])
 
     // Redirect if no teams
     useEffect(() => {
-        if (teams.length < 2) {
+        if (isHydrated && teams.length < 2) {
             router.push("/")
         }
-    }, [teams, router])
+    }, [teams, router, isHydrated])
 
     // Initialize Bracket Logic (Phase 2 core logic starts here)
     useEffect(() => {
@@ -38,6 +44,9 @@ export default function BracketPage() {
         const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(teamCount)))
         const roundsCount = Math.log2(nextPowerOf2)
         setRounds(roundsCount)
+
+        // If matches already exist (loaded from persistence), DO NOT regenerate
+        if (matches.length > 0) return
 
         const bracketSlots = nextPowerOf2
         const numByes = bracketSlots - teamCount
@@ -104,36 +113,28 @@ export default function BracketPage() {
             }
         }
 
-        // We need to propagate the Round 1 winners (from Byes) to Round 2 immediately
-        const finalMatches = propagateWinners(initialMatches)
+        // Propagate winners via the store action which would handle it if we had a bulk update,
+        // but since we are initialising, we can just call setMatches.
+        // HOWEVER, we need to propagate the Round 1 auto-winners (Byes) manually here first 
+        // because setMatches just stores what we give it.
+        const finalMatches = propagateWinnersLocally(initialMatches)
         setMatches(finalMatches)
 
-    }, [teams])
+    }, [teams, matches.length, setMatches]) // Added dep matches.length to ensure we don't loop but do check existence
 
-    const propagateWinners = (currentMatches: Match[]) => {
+    // Helper just for initialization (store has its own but we need it here for the initial payload)
+    const propagateWinnersLocally = (currentMatches: Match[]) => {
         const matchMap = new Map(currentMatches.map(m => [m.id, m]))
-
-        // We iterate rounds 1 to N-1
-        // We can't just iterate normally because of dependencies.
-        // But since we are looking for "winner" field which is already set for Byes...
 
         currentMatches.forEach(match => {
             if (match.winner && match.nextMatchId) {
                 const nextMatch = matchMap.get(match.nextMatchId)
                 if (nextMatch) {
-                    // Determine if we are the top or bottom feeder for the next match
-                    // Current index i feeds into floor(i/2).
-                    // If i is even (0, 2, 4), we are the TOP (team1) of the next match.
-                    // If i is odd (1, 3, 5), we are the BOTTOM (team2) of the next match.
                     if (match.matchIndex % 2 === 0) {
                         nextMatch.team1 = { name: match.winner }
                     } else {
                         nextMatch.team2 = { name: match.winner }
                     }
-
-                    // Auto-advance in next round if both slots filled? No, user must wait or click? 
-                    // Initial requirement: "Clicking a team name... advances them".
-                    // But Byes should be auto.
                     matchMap.set(nextMatch.id, nextMatch)
                 }
             }
@@ -143,35 +144,36 @@ export default function BracketPage() {
     }
 
     const handleAdvance = (matchId: string, winnerName: string) => {
-        const newMatches = matches.map(m => {
-            if (m.id === matchId) {
-                return { ...m, winner: winnerName }
-            }
-            return m
-        })
-        setMatches(propagateWinners(newMatches))
+        updateMatchWinner(matchId, winnerName)
     }
+
+    if (!isHydrated) return null
 
     // Render Logic
     // We need distinct columns for each round.
     // Flex container: row.
 
     return (
-        <div className="min-h-screen p-8 font-sans">
+        <div className="min-h-screen p-4 md:p-8 font-sans">
             {/* Header */}
-            <div className="max-w-7xl mx-auto flex items-center justify-between mb-12 bg-white border-[3px] border-black p-4 neo-shadow">
-                <Button variant="ghost" onClick={() => router.push("/")} className="gap-2 font-bold uppercase hover:bg-transparent hover:underline">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 mb-8 md:mb-12 bg-white border-[3px] border-black p-4 neo-shadow w-full">
+                <Button variant="ghost" onClick={() => router.push("/")} className="w-full md:w-auto gap-2 font-bold uppercase hover:bg-transparent hover:underline justify-center md:justify-start order-2 md:order-1">
                     <ChevronLeft className="h-5 w-5 stroke-[3px]" /> Back to Setup
                 </Button>
-                <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3 uppercase tracking-tighter">
-                    <Trophy className="h-8 w-8 stroke-[3px]" />
-                    <div className="flex flex-col items-center">
-                        <span className="text-xs font-bold bg-black text-white px-2 py-0.5">{sport} Tournament</span>
-                        <span className="text-xl md:text-2xl drop-shadow-[2px_2px_0_rgba(255,255,255,1)]">{tournamentName}</span>
+
+                <h1 className="text-2xl md:text-3xl font-black flex flex-col md:flex-row items-center gap-3 uppercase tracking-tighter text-center order-1 md:order-2 w-full md:w-auto">
+                    <div className="flex items-center">
+                        <Logo className="h-10 w-10 mr-2 md:mr-3" />
+                        <span className="md:hidden">TOURNAMENT</span>
+                    </div>
+                    <div className="flex flex-col items-center md:items-start">
+                        <span className="text-xs font-bold bg-black text-white px-2 py-0.5 mb-1">{sport}</span>
+                        <span className="text-xl md:text-2xl drop-shadow-[2px_2px_0_rgba(255,255,255,1)] break-all max-w-[300px] md:max-w-md line-clamp-1">{tournamentName}</span>
                     </div>
                 </h1>
-                <Button variant="outline" className="gap-2 font-bold uppercase hover:bg-[#ff69b4] hover:text-white transition-all">
-                    <Download className="h-4 w-4 stroke-[3px]" /> Export PDF
+
+                <Button variant="outline" className="w-full md:w-auto gap-2 font-bold uppercase hover:bg-[#ff69b4] hover:text-white transition-all justify-center order-3">
+                    <Download className="h-4 w-4 stroke-[3px]" /> <span className="md:inline">Export PDF</span>
                 </Button>
             </div>
 

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Shuffle, Users, Trophy } from "lucide-react"
 import { useTournamentStore } from "@/lib/store"
+import { Logo } from "@/components/Logo"
 
 type Sport = "Cricket" | "Football" | "Volleyball" | "Kabaddi" | "Other"
 
@@ -68,7 +69,8 @@ export default function TournamentSetup() {
 
     return (
         <div className="w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[80vh] font-sans">
-            <div className="text-center mb-12 space-y-4">
+            <div className="text-center mb-12 space-y-6 flex flex-col items-center">
+                <Logo className="w-24 h-24 mb-4 neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] transition-all" />
                 <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-zinc-950 uppercase drop-shadow-[4px_4px_0_rgba(255,255,255,1)]">
                     Tournament<br /><span className="bg-[#a3e635] px-2 text-black ml-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">Bracket</span> Generator
                 </h1>
@@ -104,13 +106,15 @@ export default function TournamentSetup() {
                         <div className="space-y-2">
                             <Label className="text-base font-black uppercase">Select Sport</Label>
                             <Tabs defaultValue="Cricket" onValueChange={(v) => setSport(v as Sport)} className="w-full">
-                                <TabsList className="grid w-full grid-cols-5 gap-1">
+                                <TabsList className="flex w-full overflow-x-auto pb-2 no-scrollbar gap-2 md:grid md:grid-cols-5 md:gap-1 bg-transparent p-0 snap-x">
                                     {["Cricket", "Football", "Volleyball", "Kabaddi", "Other"].map((s) => (
                                         <TabsTrigger
                                             key={s}
                                             value={s}
+                                            className="flex-shrink-0 min-w-[80px] md:min-w-0 border-[2px] border-black bg-white rounded-none data-[state=active]:bg-[#ff69b4] data-[state=active]:text-white font-bold uppercase data-[state=active]:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-transform text-[10px] sm:text-xs px-2 snap-center"
                                         >
-                                            {s.slice(0, 4)}
+                                            <span className="md:hidden">{s}</span>
+                                            <span className="hidden md:inline">{s.slice(0, 4)}</span>
                                         </TabsTrigger>
                                     ))}
                                 </TabsList>
