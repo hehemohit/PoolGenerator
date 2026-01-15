@@ -39,40 +39,52 @@ export default function BracketPage() {
         const roundsCount = Math.log2(nextPowerOf2)
         setRounds(roundsCount)
 
+        const bracketSlots = nextPowerOf2
+        const numByes = bracketSlots - teamCount
+        const matchesInFirstRound = bracketSlots / 2
+
+        // Strategy: 
+        // We have `matchesInFirstRound` matches.
+        // We want to assign `numByes` Byes to specific matches so they play against a Real Team.
+        // A Match with a Bye automatically has a Winner.
+        // Matches needed for Byes: `numByes`. (Since 1 Bye + 1 Team = 1 Match).
+        // Matches playing normally: `matchesInFirstRound - numByes`.
+        // Teams required for Bye Matches: `numByes` (1 per match).
+        // Matches remaining: `matchesInFirstRound - numByes`.
+        // Teams required for Normal Matches: 2 * (Matches - Byes).
+
+        // Total Teams Check: numByes + 2*(M-B) = B + 2M - 2B = 2M - B = Slots - Byes = Teams. Correct.
+
+        // Allocation:
+        // We will assign the first `numByes` matches to have (Team, BYE).
+        // The remaining matches will have (Team, Team).
+
         const initialMatches: Match[] = []
-
-        // Generate Round 1 matches
-        // We need to fill 2^N slots.
-        // If we have 6 teams, slots=8. Teams 1-6 fill slots. 7-8 are Byes.
-
-        // Create an array of size nextPowerOf2
-        const bracketSlots = new Array(nextPowerOf2).fill(null).map((_, i) => {
-            if (i < teams.length) return { name: teams[i].name, isBye: false }
-            return { name: "BYE", isBye: true }
-        })
-
-        // Create matches for all rounds
-        // We just generate structure first
-        let currentRoundMatches = nextPowerOf2 / 2
-        let matchCounter = 0
-        let roundOffset = 0 // Used to help calculate "nextMatchId"
-
-        // To facilitate "nextMatchId" linking, we'll generate all matches in a flat list first, level by level.
-        // Round 1: IDs 0 to (N/2 - 1)
-        // Round 2: IDs (N/2) to ...
-
-        // Actually, better ID strategy: "R{round}-M{index}"
+        let currentTeamIndex = 0
 
         for (let r = 1; r <= roundsCount; r++) {
             const matchesInThisRound = nextPowerOf2 / Math.pow(2, r)
+
             for (let i = 0; i < matchesInThisRound; i++) {
-                // Logic to find teams for Round 1
                 let t1 = null
                 let t2 = null
+                let winner = null
 
                 if (r === 1) {
-                    t1 = bracketSlots[i * 2]
-                    t2 = bracketSlots[i * 2 + 1]
+                    // Round 1 Logic
+                    if (i < numByes) {
+                        // This match gets a Bye
+                        t1 = { name: teams[currentTeamIndex]?.name || "TBD", isBye: false }
+                        t2 = { name: "BYE", isBye: true }
+                        winner = t1.name // Auto-advance
+                        currentTeamIndex++
+                    } else {
+                        // Normal Match
+                        t1 = { name: teams[currentTeamIndex]?.name || "TBD", isBye: false }
+                        currentTeamIndex++
+                        t2 = { name: teams[currentTeamIndex]?.name || "TBD", isBye: false }
+                        currentTeamIndex++
+                    }
                 }
 
                 // Logic to find next match ID
@@ -86,28 +98,14 @@ export default function BracketPage() {
                     matchIndex: i,
                     team1: t1,
                     team2: t2,
-                    winner: null,
+                    winner: winner,
                     nextMatchId
                 })
             }
         }
 
-        // Auto-advance Byes
-        // If a match in Round 1 has a "BYE", the other team automatically becomes the winner.
-        const processedMatches = initialMatches.map(m => {
-            if (m.round === 1) {
-                if (m.team2?.isBye && m.team1) return { ...m, winner: m.team1.name }
-                if (m.team1?.isBye && m.team2) return { ...m, winner: m.team2.name }
-            }
-            return m
-        })
-
-        // We also need to propagate the winners to the next rounds "team1" or "team2" slots immediately
-        // This requires a more stateful update which we can do in a separate function or refactor this Effect.
-        // For now, let's just set the structure and handle propagation in the render/click handler or a second pass.
-
-        // Let's do a quick propagation pass for the Byes
-        const finalMatches = propagateWinners(processedMatches)
+        // We need to propagate the Round 1 winners (from Byes) to Round 2 immediately
+        const finalMatches = propagateWinners(initialMatches)
         setMatches(finalMatches)
 
     }, [teams])

@@ -19,10 +19,35 @@ export default function TournamentSetup() {
     const [sport, setSport] = useState<Sport>("Cricket")
     const [tournamentName, setTournamentName] = useState("")
     const [teamInput, setTeamInput] = useState("")
+    const [numTeams, setNumTeams] = useState<number>(0)
+
+    // Sync text to number
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const val = e.target.value
+        setTeamInput(val)
+        const lines = val.split("\n").filter(t => t.trim().length > 0)
+        setNumTeams(lines.length)
+    }
+
+    // Sync number to text (Auto-generate)
+    const handleNumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = parseInt(e.target.value) || 0
+        setNumTeams(val)
+        // Only auto-fill if empty or previously auto-filled (simple check: if text is empty or matches pattern)
+        if (teamInput.trim() === "" || teamInput.startsWith("Team 1")) {
+            const generated = Array.from({ length: val }, (_, i) => `Team ${i + 1}`).join("\n")
+            setTeamInput(generated)
+        }
+    }
 
     const handleRandomize = () => {
         // 1. Parse teams
-        const teams = teamInput.split("\n").map(t => t.trim()).filter(t => t.length > 0)
+        let teams = teamInput.split("\n").map(t => t.trim()).filter(t => t.length > 0)
+
+        // If user entered a number but no text, generate now
+        if (teams.length === 0 && numTeams > 1) {
+            teams = Array.from({ length: numTeams }, (_, i) => `Team ${i + 1}`)
+        }
 
         if (teams.length < 2) {
             alert("Please enter at least 2 teams.")
@@ -92,18 +117,36 @@ export default function TournamentSetup() {
                             </Tabs>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="teams" className="text-base font-black uppercase">Team Names</Label>
-                            <Textarea
-                                id="teams"
-                                placeholder="ENTER TEAM NAMES HERE..."
-                                value={teamInput}
-                                onChange={(e) => setTeamInput(e.target.value)}
-                            />
-                            <p className="text-xs font-bold text-black flex justify-between uppercase border-2 border-black p-1 bg-[#a3e635]">
-                                <span>1 Team / Line</span>
-                                <span>{teamInput.split(/\n/).filter(line => line.trim()).length} Teams</span>
-                            </p>
+                        <div className="space-y-4">
+                            <div className="flex gap-4">
+                                <div className="space-y-2 flex-1">
+                                    <Label htmlFor="num-teams" className="text-base font-black uppercase">Number of Teams</Label>
+                                    <Input
+                                        id="num-teams"
+                                        type="number"
+                                        min="2"
+                                        placeholder="0"
+                                        className="h-12 text-lg font-black border-[3px] border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] focus-visible:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] bg-white"
+                                        value={numTeams || ""}
+                                        onChange={handleNumChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="teams" className="text-base font-black uppercase">Team Names</Label>
+                                <Textarea
+                                    id="teams"
+                                    placeholder="ENTER TEAM NAMES HERE..."
+                                    className="min-h-[200px] font-mono text-sm resize-y border-[3px] border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus-visible:translate-x-[2px] focus-visible:translate-y-[2px] transition-all bg-white uppercase font-bold"
+                                    value={teamInput}
+                                    onChange={handleTextChange}
+                                />
+                                <p className="text-xs font-bold text-black flex justify-between uppercase border-2 border-black p-1 bg-[#a3e635]">
+                                    <span>1 Team / Line</span>
+                                    <span>{numTeams} Teams</span>
+                                </p>
+                            </div>
                         </div>
                     </CardContent>
                     <CardFooter className="bg-white border-t-[3px] border-black p-4">
