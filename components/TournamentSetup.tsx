@@ -71,10 +71,10 @@ export default function TournamentSetup() {
         <div className="w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[80vh] font-sans">
             <div className="text-center mb-12 space-y-6 flex flex-col items-center">
                 <Logo className="w-24 h-24 mb-4 neo-shadow hover:translate-x-[2px] hover:translate-y-[2px] transition-all" />
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-zinc-950 uppercase drop-shadow-[4px_4px_0_rgba(255,255,255,1)]">
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#09090b] uppercase drop-shadow-[4px_4px_0_rgba(255,255,255,1)]">
                     Tournament<br /><span className="bg-[#a3e635] px-2 text-black ml-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">Bracket</span> Generator
                 </h1>
-                <p className="text-xl font-bold text-zinc-800 max-w-2xl mx-auto bg-white border-2 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-1">
+                <p className="text-xl font-bold text-[#27272a] max-w-2xl mx-auto bg-white border-2 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-1">
                     Create professional knockout tournaments in seconds.
                 </p>
             </div>
@@ -86,7 +86,7 @@ export default function TournamentSetup() {
                             <Users className="h-6 w-6 stroke-[3px]" />
                             Setup
                         </CardTitle>
-                        <CardDescription className="text-zinc-600 font-bold">
+                        <CardDescription className="text-[#52525b] font-bold">
                             Configure the settings for your new tournament.
                         </CardDescription>
                     </CardHeader>

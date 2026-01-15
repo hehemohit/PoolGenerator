@@ -9,11 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-black text-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none hover:bg-zinc-800",
+        default: "bg-black text-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none hover:bg-[#27272a]",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
         outline:
-          "bg-white text-black border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-zinc-100 hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
+          "bg-white text-black border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-[#f4f4f5] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px]",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
         ghost:

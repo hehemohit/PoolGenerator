@@ -1,4 +1,7 @@
 "use client"
+import html2canvas from "html2canvas"
+import { jsPDF } from "jspdf"
+import { useRef } from "react"
 
 import { useTournamentStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
@@ -23,6 +26,7 @@ export default function BracketPage() {
     const { teams, sport, tournamentName, matches, setMatches, updateMatchWinner } = useTournamentStore()
     const [rounds, setRounds] = useState<number>(0)
     const [isHydrated, setIsHydrated] = useState(false)
+    const bracketRef = useRef<HTMLDivElement>(null)
 
     // Wait for hydration to avoid mismatch
     useEffect(() => {
@@ -147,6 +151,85 @@ export default function BracketPage() {
         updateMatchWinner(matchId, winnerName)
     }
 
+    const handleExport = async () => {
+        if (!bracketRef.current) return
+
+        try {
+            console.log("Starting export process...")
+            const element = bracketRef.current
+
+            // Explicit dimensions are often needed for scrollable containers
+            const width = element.scrollWidth
+            const height = element.scrollHeight
+
+            console.log(`Capturing area: ${width}x${height}`)
+
+            // Create a promise that rejects after 10 seconds (timeout protection)
+            const capturePromise = html2canvas(element, {
+                scale: 1, // Reduced for stability
+                width: width,
+                height: height,
+                useCORS: true,
+                logging: true, // Enable debug logging
+                backgroundColor: "#f4f4f5",
+                windowWidth: width, // Ensure full width is rendered
+                windowHeight: height
+            })
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Timeout: Bracket generation took too long")), 10000)
+            )
+
+            // Race the capture against the timeout
+            const canvas = await Promise.race([capturePromise, timeoutPromise]) as HTMLCanvasElement
+
+            console.log("Canvas captured successfully")
+            // ... rest of PDF logic
+            if (canvas.width === 0 || canvas.height === 0) {
+                alert("Export failed: Bracket content is empty.")
+                return
+            }
+
+            // 3. Initialize Standard A4 Landscape PDF
+            // Using standard formats prevents "corrupt file" errors in some viewers
+            const pdf = new jsPDF('l', 'mm', 'a4')
+
+            const imgData = canvas.toDataURL('image/png')
+
+            // 4. Fit Image to A4 Page
+            const pageWidth = pdf.internal.pageSize.getWidth()
+            const pageHeight = pdf.internal.pageSize.getHeight()
+
+            // Calculate scale to fit within page (leaving small margin)
+            const margin = 10
+            const availableWidth = pageWidth - (margin * 2)
+            const availableHeight = pageHeight - (margin * 2)
+
+            const widthRatio = availableWidth / canvas.width
+            const heightRatio = availableHeight / canvas.height
+
+            // Use the smaller ratio to ensure it fits entirely
+            const ratio = Math.min(widthRatio, heightRatio)
+
+            const finalWidth = canvas.width * ratio
+            const finalHeight = canvas.height * ratio
+
+            // Center the image on the page
+            const x = (pageWidth - finalWidth) / 2
+            const y = (pageHeight - finalHeight) / 2
+
+            pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight)
+
+            // 5. Save with Explicit Filename
+            const safeName = (tournamentName || "Tournament").replace(/[^a-z0-9]/gi, '_')
+            pdf.save(`${safeName}_Bracket.pdf`)
+
+        } catch (err) {
+            console.error("Export failed:", err)
+            alert("Failed to export. See console for details.")
+        }
+    }
+
     if (!isHydrated) return null
 
     // Render Logic
@@ -172,13 +255,13 @@ export default function BracketPage() {
                     </div>
                 </h1>
 
-                <Button variant="outline" className="w-full md:w-auto gap-2 font-bold uppercase hover:bg-[#ff69b4] hover:text-white transition-all justify-center order-3">
+                <Button variant="outline" onClick={handleExport} className="w-full md:w-auto gap-2 font-bold uppercase hover:bg-[#ff69b4] hover:text-white transition-all justify-center order-3">
                     <Download className="h-4 w-4 stroke-[3px]" /> <span className="md:inline">Export PDF</span>
                 </Button>
             </div>
 
             {/* Bracket Container */}
-            <div className="max-w-[98vw] mx-auto overflow-x-auto pb-12">
+            <div className="max-w-[98vw] mx-auto overflow-x-auto pb-12" ref={bracketRef}>
                 <div className="flex gap-20 min-w-max px-4">
                     {Array.from({ length: rounds }).map((_, rIndex) => {
                         const roundNum = rIndex + 1
@@ -195,19 +278,19 @@ export default function BracketPage() {
                                     <div key={match.id} className="relative flex flex-col gap-0 border-[3px] border-black bg-white text-black neo-shadow transition-all hover:translate-x-[-2px] hover:translate-y-[-2px]">
 
                                         <div
-                                            className={`p-4 border-b-[3px] border-black cursor-pointer hover:bg-zinc-100 transition-colors flex justify-between items-center ${match.winner === match.team1?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
+                                            className={`p-4 border-b-[3px] border-black cursor-pointer hover:bg-[#f4f4f5] transition-colors flex justify-between items-center ${match.winner === match.team1?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
                                             onClick={() => match.team1 && !match.winner && handleAdvance(match.id, match.team1.name)}
                                         >
-                                            <span className={!match.team1 ? "text-zinc-400 italic" : "uppercase"}>
+                                            <span className={!match.team1 ? "text-[#a1a1aa] italic" : "uppercase"}>
                                                 {match.team1?.name || "TBD"}
                                             </span>
                                             {match.team1?.isBye && <span className="text-[10px] bg-[#ff69b4] text-white border border-black px-1 font-bold">BYE</span>}
                                         </div>
                                         <div
-                                            className={`p-4 cursor-pointer hover:bg-zinc-100 transition-colors flex justify-between items-center ${match.winner === match.team2?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
+                                            className={`p-4 cursor-pointer hover:bg-[#f4f4f5] transition-colors flex justify-between items-center ${match.winner === match.team2?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
                                             onClick={() => match.team2 && !match.winner && handleAdvance(match.id, match.team2.name)}
                                         >
-                                            <span className={!match.team2 ? "text-zinc-400 italic" : "uppercase"}>
+                                            <span className={!match.team2 ? "text-[#a1a1aa] italic" : "uppercase"}>
                                                 {match.team2?.name || "TBD"}
                                             </span>
                                             {match.team2?.isBye && <span className="text-[10px] bg-[#ff69b4] text-white border border-black px-1 font-bold">BYE</span>}
