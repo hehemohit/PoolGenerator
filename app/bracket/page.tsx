@@ -159,69 +159,63 @@ export default function BracketPage() {
     // Flex container: row.
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-8">
+        <div className="min-h-screen p-8 font-sans">
             {/* Header */}
-            <div className="max-w-7xl mx-auto flex items-center justify-between mb-12">
-                <Button variant="ghost" onClick={() => router.push("/")} className="gap-2">
-                    <ChevronLeft className="h-4 w-4" /> Back to Setup
+            <div className="max-w-7xl mx-auto flex items-center justify-between mb-12 bg-white border-[3px] border-black p-4 neo-shadow">
+                <Button variant="ghost" onClick={() => router.push("/")} className="gap-2 font-bold uppercase hover:bg-transparent hover:underline">
+                    <ChevronLeft className="h-5 w-5 stroke-[3px]" /> Back to Setup
                 </Button>
-                <h1 className="text-3xl font-bold flex items-center gap-3">
-                    <Trophy className="h-8 w-8 text-yellow-500" />
-                    <div className="flex flex-col">
-                        <span className="text-xs font-normal text-muted-foreground uppercase tracking-widest">{sport} Tournament</span>
-                        <span>{tournamentName}</span>
+                <h1 className="text-2xl md:text-3xl font-black flex items-center gap-3 uppercase tracking-tighter">
+                    <Trophy className="h-8 w-8 stroke-[3px]" />
+                    <div className="flex flex-col items-center">
+                        <span className="text-xs font-bold bg-black text-white px-2 py-0.5">{sport} Tournament</span>
+                        <span className="text-xl md:text-2xl drop-shadow-[2px_2px_0_rgba(255,255,255,1)]">{tournamentName}</span>
                     </div>
                 </h1>
-                <Button variant="outline" className="gap-2">
-                    <Download className="h-4 w-4" /> Export PDF
+                <Button variant="outline" className="gap-2 font-bold uppercase hover:bg-[#ff69b4] hover:text-white transition-all">
+                    <Download className="h-4 w-4 stroke-[3px]" /> Export PDF
                 </Button>
             </div>
 
             {/* Bracket Container */}
-            {/* 
-         We need a horizontal overflow container
-         Layout:
-         Round 1 Col | Round 2 Col | Round 3 Col
-      */}
-            <div className="max-w-[95vw] mx-auto overflow-x-auto pb-12">
-                <div className="flex gap-16 min-w-max">
+            <div className="max-w-[98vw] mx-auto overflow-x-auto pb-12">
+                <div className="flex gap-20 min-w-max px-4">
                     {Array.from({ length: rounds }).map((_, rIndex) => {
                         const roundNum = rIndex + 1
                         const roundMatches = matches.filter(m => m.round === roundNum).sort((a, b) => a.matchIndex - b.matchIndex)
 
                         return (
-                            <div key={roundNum} className="flex flex-col justify-around relative w-64 space-y-8">
+                            <div key={roundNum} className="flex flex-col justify-around relative w-80 space-y-8">
                                 {/* Round Header */}
-                                <div className="absolute -top-10 left-0 w-full text-center font-semibold text-muted-foreground uppercase tracking-widest text-sm">
+                                <div className="absolute -top-12 left-0 w-full text-center font-black text-black uppercase tracking-widest text-xl bg-[#a3e635] border-[3px] border-black py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-20">
                                     {roundNum === rounds ? "Finals" : `Round ${roundNum}`}
                                 </div>
 
                                 {roundMatches.map((match) => (
-                                    <div key={match.id} className="relative flex flex-col gap-0 border rounded-lg overflow-hidden shadow-sm bg-card text-card-foreground">
-                                        {/* Connector Lines Logic would go here (or strictly CSS based on position) */}
+                                    <div key={match.id} className="relative flex flex-col gap-0 border-[3px] border-black bg-white text-black neo-shadow transition-all hover:translate-x-[-2px] hover:translate-y-[-2px]">
 
                                         <div
-                                            className={`p-3 border-b cursor-pointer hover:bg-muted/50 transition-colors flex justify-between items-center ${match.winner === match.team1?.name ? "bg-green-500/10 font-bold" : ""}`}
+                                            className={`p-4 border-b-[3px] border-black cursor-pointer hover:bg-zinc-100 transition-colors flex justify-between items-center ${match.winner === match.team1?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
                                             onClick={() => match.team1 && !match.winner && handleAdvance(match.id, match.team1.name)}
                                         >
-                                            <span className={!match.team1 ? "text-muted-foreground italic" : ""}>
+                                            <span className={!match.team1 ? "text-zinc-400 italic" : "uppercase"}>
                                                 {match.team1?.name || "TBD"}
                                             </span>
-                                            {match.team1?.isBye && <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1 rounded">BYE</span>}
+                                            {match.team1?.isBye && <span className="text-[10px] bg-[#ff69b4] text-white border border-black px-1 font-bold">BYE</span>}
                                         </div>
                                         <div
-                                            className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors flex justify-between items-center ${match.winner === match.team2?.name ? "bg-green-500/10 font-bold" : ""}`}
+                                            className={`p-4 cursor-pointer hover:bg-zinc-100 transition-colors flex justify-between items-center ${match.winner === match.team2?.name ? "bg-[#a3e635] font-black" : "font-bold"}`}
                                             onClick={() => match.team2 && !match.winner && handleAdvance(match.id, match.team2.name)}
                                         >
-                                            <span className={!match.team2 ? "text-muted-foreground italic" : ""}>
+                                            <span className={!match.team2 ? "text-zinc-400 italic" : "uppercase"}>
                                                 {match.team2?.name || "TBD"}
                                             </span>
-                                            {match.team2?.isBye && <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1 rounded">BYE</span>}
+                                            {match.team2?.isBye && <span className="text-[10px] bg-[#ff69b4] text-white border border-black px-1 font-bold">BYE</span>}
                                         </div>
 
                                         {/* Connector Line (Right side) - Only if not final round */}
                                         {roundNum < rounds && (
-                                            <div className="absolute right-0 top-1/2 w-4 h-[1px] bg-border translate-x-full z-10" />
+                                            <div className="absolute right-0 top-1/2 w-10 h-[3px] bg-black translate-x-full z-10" />
                                         )}
                                     </div>
                                 ))}

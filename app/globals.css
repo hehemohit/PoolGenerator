@@ -120,6 +120,28 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-zinc-100 text-zinc-950;
+    background-image: radial-gradient(#000 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .dark body {
+    @apply bg-zinc-950 text-zinc-50;
+    background-image: radial-gradient(#fff 1px, transparent 1px);
+  }
+}
+
+@layer components {
+  .neo-shadow {
+    box-shadow: 5px 5px 0px 0px rgba(0,0,0,1);
+  }
+  .neo-shadow-sm {
+    box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
+  }
+  .neo-shadow-hover:hover {
+    box-shadow: 2px 2px 0px 0px rgba(0,0,0,1);
+    transform: translate(3px, 3px);
+  }
+  .neo-border {
+    border: 3px solid black;
   }
 }

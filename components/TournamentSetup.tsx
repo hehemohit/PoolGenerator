@@ -42,34 +42,34 @@ export default function TournamentSetup() {
     }
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[80vh]">
+        <div className="w-full max-w-4xl mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[80vh] font-sans">
             <div className="text-center mb-12 space-y-4">
-                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-transparent bg-clip-text animate-in fade-in zoom-in duration-500">
-                    Tournament Bracket Generator
+                <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-zinc-950 uppercase drop-shadow-[4px_4px_0_rgba(255,255,255,1)]">
+                    Tournament<br /><span className="bg-[#a3e635] px-2 text-black ml-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">Bracket</span> Generator
                 </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Create professional knockout tournaments in seconds. Select your sport, enter teams, and let the chaos begin.
+                <p className="text-xl font-bold text-zinc-800 max-w-2xl mx-auto bg-white border-2 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -rotate-1">
+                    Create professional knockout tournaments in seconds.
                 </p>
             </div>
 
-            <div className="w-full max-w-lg">
-                <Card className="border-border/50 shadow-xl bg-card/50 backdrop-blur-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users className="h-5 w-5 text-primary" />
-                            Tournament Details
+            <div className="w-full max-w-lg z-10">
+                <Card className="bg-[#d8b4fe] overflow-visible">
+                    <CardHeader className="border-b-[3px] border-black bg-white">
+                        <CardTitle className="flex items-center gap-2 text-2xl font-black uppercase tracking-widest">
+                            <Users className="h-6 w-6 stroke-[3px]" />
+                            Setup
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-zinc-600 font-bold">
                             Configure the settings for your new tournament.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-6 pt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="t-name">Tournament Name</Label>
+                            <Label htmlFor="t-name" className="text-base font-black uppercase">Tournament Name</Label>
                             <div className="flex">
                                 <Input
                                     id="t-name"
-                                    placeholder="e.g. Summer Cup 2026"
+                                    placeholder="e.g. SUMMER SLAM 2026"
                                     value={tournamentName}
                                     onChange={(e) => setTournamentName(e.target.value)}
                                 />
@@ -77,37 +77,43 @@ export default function TournamentSetup() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Select Sport</Label>
+                            <Label className="text-base font-black uppercase">Select Sport</Label>
                             <Tabs defaultValue="Cricket" onValueChange={(v) => setSport(v as Sport)} className="w-full">
-                                <TabsList className="grid w-full grid-cols-5">
-                                    <TabsTrigger value="Cricket">Cri</TabsTrigger>
-                                    <TabsTrigger value="Football">Foot</TabsTrigger>
-                                    <TabsTrigger value="Volleyball">Voll</TabsTrigger>
-                                    <TabsTrigger value="Kabaddi">Kab</TabsTrigger>
-                                    <TabsTrigger value="Other">Oth</TabsTrigger>
+                                <TabsList className="grid w-full grid-cols-5 gap-1">
+                                    {["Cricket", "Football", "Volleyball", "Kabaddi", "Other"].map((s) => (
+                                        <TabsTrigger
+                                            key={s}
+                                            value={s}
+                                        >
+                                            {s.slice(0, 4)}
+                                        </TabsTrigger>
+                                    ))}
                                 </TabsList>
                             </Tabs>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="teams">Team Names</Label>
+                            <Label htmlFor="teams" className="text-base font-black uppercase">Team Names</Label>
                             <Textarea
                                 id="teams"
-                                placeholder="Enter team names here, one per line..."
-                                className="min-h-[200px] font-mono text-sm resize-y"
+                                placeholder="ENTER TEAM NAMES HERE..."
                                 value={teamInput}
                                 onChange={(e) => setTeamInput(e.target.value)}
                             />
-                            <p className="text-xs text-muted-foreground flex justify-between">
-                                <span>One team per line</span>
+                            <p className="text-xs font-bold text-black flex justify-between uppercase border-2 border-black p-1 bg-[#a3e635]">
+                                <span>1 Team / Line</span>
                                 <span>{teamInput.split(/\n/).filter(line => line.trim()).length} Teams</span>
                             </p>
                         </div>
                     </CardContent>
-                    <CardFooter>
-                        <Button size="lg" className="w-full text-lg font-semibold shadow-lg hover:shadow-xl transition-all" onClick={handleRandomize}>
-                            <Trophy className="mr-2 h-5 w-5" />
-                            Generate Bracket
+                    <CardFooter className="bg-white border-t-[3px] border-black p-4">
+                        <Button
+                            size="lg"
+                            className="w-full text-xl font-black uppercase h-16 shadow-[5px_5px_0px_0px_#a3e635] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                            onClick={handleRandomize}
+                        >
+                            <Trophy className="mr-2 h-6 w-6 stroke-[3px]" />
+                            Let's Fight
                         </Button>
                     </CardFooter>
                 </Card>
